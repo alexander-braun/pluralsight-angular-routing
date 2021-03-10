@@ -14,8 +14,9 @@ export class ProductEditComponent implements OnInit {
   pageTitle = 'Product Edit';
   errorMessage: string;
 
-  product: Product;
   private dataIsValid: { [key: string]: boolean } = {};
+  private currentProduct: Product;
+  private originalProduct: Product;
 
   constructor(
     private productService: ProductService,
@@ -24,12 +25,34 @@ export class ProductEditComponent implements OnInit {
     private router: Router
   ) {}
 
+  get product(): Product {
+    return this.currentProduct;
+  }
+
+  set product(value: Product) {
+    this.currentProduct = value;
+    this.originalProduct = { ...value };
+  }
+
+  get isDirty(): boolean {
+    return (
+      JSON.stringify(this.originalProduct) !==
+      JSON.stringify(this.currentProduct)
+    );
+  }
+
   ngOnInit() {
     this.route.data.subscribe((data) => {
       const resolvedData: ProductResolved = data['resolvedData'];
       this.errorMessage = resolvedData.error;
       this.product = resolvedData.product;
     });
+  }
+
+  reset(): void {
+    this.dataIsValid = null;
+    this.currentProduct = null;
+    this.originalProduct = null;
   }
 
   deleteProduct(): void {
@@ -76,6 +99,7 @@ export class ProductEditComponent implements OnInit {
       this.messageService.addMessage(message);
     }
 
+    this.reset();
     this.router.navigate(['/products']);
   }
 
